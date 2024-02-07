@@ -68,6 +68,18 @@ class User {
             return
         }
     }
+    static async getUsers(req, res) {
+        try {
+            const users = await userModel.find()
+            if (!users) return res.status(404).json('There is no user data')
+            res.status(200).json({users})
+            return
+        } catch(err) {
+            console.log(err)
+            res.status(500).send('Internal Server Error', err)
+            return
+        }
+    }
 }
 
 module.exports = User
