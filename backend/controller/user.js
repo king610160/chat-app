@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = process.env
 const validator = require('validator')
 const bcrypt = require('bcrypt')
+const mongoose = require('mongoose')
 
 class User {
     static createToken(id) {
@@ -12,11 +13,11 @@ class User {
         try {
             const { name, email, password } = req.body
             let user = await userModel.findOne({email})
-            if (user) return res.status(409).json('This email has been registered.')
+            if (user) return res.status(409).json('Invalid mail or password.')
 
             // error fields
             if (!(name && email && password)) return res.status(401).json('All fields are required.')
-            if (!validator.isEmail(email)) return res.status(401).json('Please enter avaliable email.')
+            if (!validator.isEmail(email)) return res.status(401).json('Invalid mail or password.')
 
             let hashPassword = await bcrypt.hash(password,10)
             user = new userModel({
@@ -41,9 +42,9 @@ class User {
             if (!(email && password)) return res.status(401).json('All fields are required.')
 
             let user = await userModel.findOne({email}).select('+password')
-            if (!user) return res.status(404).json('Invaild email or password.')
+            if (!user) return res.status(404).json('Invalid email or password.')
             const result = await bcrypt.compare(password, user.password)
-            if (!result) return res.status(404).json('Invaild email or password.')
+            if (!result) return res.status(404).json('Invalid email or password.')
 
             const id = user._id.toString()
             const token = User.createToken(id)
@@ -58,8 +59,10 @@ class User {
     static async findUser(req, res) {
         try {
             const { id } = req.params
+            const check = mongoose.Types.ObjectId.isValid(id)
+            if (!check) return res.status(404).json('There is no this user')
+
             const user = await userModel.findById(id)
-            if (!user) return res.status(404).json('There is no this user')
             res.status(200).json({user})
             return
         } catch(err) {

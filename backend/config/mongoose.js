@@ -1,10 +1,18 @@
 const mongoose = require('mongoose')
-const { MONGODB_URI } = process.env
+const { MONGODB_URI, MONGODB_URI_TEST, NODE_ENV } = process.env
+
+let uri
+
+if (NODE_ENV === 'dev') {
+    uri = MONGODB_URI
+} else if (NODE_ENV === 'test') {
+    uri = MONGODB_URI_TEST
+}
 
 function connectToDatabase() {
     return new Promise((resolve, reject) => {
         mongoose.set('strictQuery', false)
-        mongoose.connect(MONGODB_URI, {
+        mongoose.connect(uri, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         })
@@ -23,4 +31,6 @@ function connectToDatabase() {
     })
 }
 
-module.exports = connectToDatabase
+module.exports = {
+    connectToDatabase
+}
