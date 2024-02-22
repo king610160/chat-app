@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const todo = require('./todo')
-const user = require('./user')
 
-router.use('/todo', todo)
+const user = require('./user')
+const chat = require('./chat')
+
 router.use('/user', user)
+router.use('/chat', chat)
 
 module.exports = router
