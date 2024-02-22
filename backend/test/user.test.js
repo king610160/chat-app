@@ -140,10 +140,10 @@ test('find a no existed user', async() => {
     expect(str).toBe('There is no this user')
 })
 
-// finish test, global, only happen once
-afterAll(async() => {
-    await userModel.deleteMany({ 
-        email: { $in: ['test77@test.com', 'test87@test.com', 'admin1@admin.com'] } 
+    // finish test, global, only happen once
+    afterAll(async() => {
+        await userModel.deleteMany({ 
+            email: { $in: ['test77@test.com', 'test87@test.com', 'admin1@admin.com'] } 
+        })
+        server.close()
     })
-    server.close()
-})
