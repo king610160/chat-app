@@ -32,7 +32,7 @@ class User {
             return
         } catch (err) {
             console.log(err)
-            res.status(500).send('Internal Server Error', err)
+            res.status(500).send({'message': err.message})
             return
         }
     }
