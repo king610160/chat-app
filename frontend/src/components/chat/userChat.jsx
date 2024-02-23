@@ -3,8 +3,9 @@ import { useFetchRecipientUser } from "../../hooks/useFetchRecipient";
 import avatar from '../../assets/avatar.svg'
 
 const UserChat = ({chat, user}) => {
+    // userChat will call fetch to find recipientUser function
     const { recipientUser } = useFetchRecipientUser(chat,user)
-    console.log(recipientUser)
+
     return ( 
         <Stack 
             direction='horizontal' 
