@@ -12,6 +12,8 @@ export const ChatContextProvider = ({ children, user }) => {
     const [messages, setMessages] = useState(null)
     const [isMessagesLoading, setIsMessagesLoading] = useState(false)
     const [messagesError, setMessagesError] = useState(null)
+    const [sendTextMessageError, setSendTextMessageError] = useState(null)
+    const [newMessage, setNewMessage] = useState(null)
 
     // the users that had not contact with user, will label at top-left
     useEffect(() => {
@@ -75,6 +77,20 @@ export const ChatContextProvider = ({ children, user }) => {
         getMessages()
     }, [currentChat])
 
+    const sendTextMessage = useCallback(async(text, senderId, chatId, setTextMessage) => {
+        if (!text) return console.log('You must enter something...')
+        const response = await postRequest(`${baseUrl}/message`, JSON.stringify({
+            senderId: senderId,
+            chatId: chatId,
+            text: text
+        }))
+        if(response.error) return setSendTextMessageError(response)
+        setNewMessage(response)
+        setMessages((prev) => [...prev, response])
+        setTextMessage("")
+
+    }, [])
+
     const createChat = useCallback(async(firstId, secondId) => {
         // create these two people's chat
         const response = await postRequest(
@@ -106,7 +122,8 @@ export const ChatContextProvider = ({ children, user }) => {
                 currentChat,
                 messages,
                 messagesError,
-                isMessagesLoading
+                isMessagesLoading,
+                sendTextMessage
             }}
         >
             {children}
