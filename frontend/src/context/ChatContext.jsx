@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useState } from "react";
 import { baseUrl, getRequest, postRequest } from "../utils/services";
+import { io } from 'socket.io-client'
 
 export const ChatContext = createContext()
 
@@ -14,8 +15,61 @@ export const ChatContextProvider = ({ children, user }) => {
     const [messagesError, setMessagesError] = useState(null)
     const [sendTextMessageError, setSendTextMessageError] = useState(null)
     const [newMessage, setNewMessage] = useState(null)
+    const [socket, setScoket] = useState(null)
+    const [onlineUsers, setOnlineUsers] = useState([])
 
-    // the users that had not contact with user, will label at top-left
+    // initial socket
+    useEffect(() => {
+        const newSocket = io('http://localhost:3000')
+        setScoket(newSocket)
+
+        return () => {
+            newSocket.disconnect()
+        }
+    // only when user is reset, and can reset the socket
+    }, [user])
+
+    // if there is new socket, means new connection
+    useEffect(() => {
+        if(socket === null) return
+        // when socket trigger, send addNewUser with user.id to socket
+        socket.emit("addNewUser", user?.id)
+        // get the onlineUsers from socket provide's res
+        socket.on("getOnlineUsers", (res) => {
+            setOnlineUsers(res)
+        })
+        // when disconnect, also call getOnlineUsers, for update
+        return () => {
+            socket.off("getOnlineUsers")
+        }
+    }, [socket])
+
+    // send message, when newMessage set, and update
+    useEffect(() => {
+        if(socket === null) return
+        
+        // another user, find currentChat's another user
+        const recipientId = currentChat?.members.find((id) => id !== user?.id)
+        socket.emit("sendMessage",{...newMessage, recipientId})
+    }, [newMessage])
+
+    // receive message, only when socket change, will this effect be trigger
+    useEffect(() => {
+        if(socket === null) return
+
+        // when socket recieve message, check currentChat's id if equal, then update the message
+        socket.on("getMessage", (res) => {
+            // if chatId not equal, then not return, else send the message
+            if (currentChat?._id !== res.chatId) return
+            setMessages([...messages, res])
+        })
+        
+        return () => {
+            socket.off("getMessage")
+        }
+    }, [socket, currentChat])
+
+    // the users that had not contact with user, will label the name at top-left
     useEffect(() => {
         const getUsers = async() => {
             // find all users
@@ -34,7 +88,6 @@ export const ChatContextProvider = ({ children, user }) => {
                         return chat.members[0] === u._id || chat.members[1] === u._id
                     })
                 }
-
                 return !isChatCreated
             })
 
@@ -53,7 +106,6 @@ export const ChatContextProvider = ({ children, user }) => {
                 // get all the chat between two users
                 const response = await getRequest(`${baseUrl}/chat/${user.id}`)
                 setIsUserChatsLoading(false)
-
                 if(response.error) return setUserChatsError(response)
                 setUserChats(response)
             }
@@ -123,7 +175,8 @@ export const ChatContextProvider = ({ children, user }) => {
                 messages,
                 messagesError,
                 isMessagesLoading,
-                sendTextMessage
+                sendTextMessage,
+                onlineUsers
             }}
         >
             {children}

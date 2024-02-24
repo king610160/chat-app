@@ -1,10 +1,15 @@
-import { Stack} from 'react-bootstrap'
+import { useContext } from 'react'
+import { ChatContext } from "../../context/ChatContext";
+import { Stack } from 'react-bootstrap'
 import { useFetchRecipientUser } from "../../hooks/useFetchRecipient";
 import avatar from '../../assets/avatar.svg'
 
 const UserChat = ({chat, user}) => {
     // userChat will call fetch to find recipientUser function
-    const { recipientUser } = useFetchRecipientUser(chat,user)
+    const { recipientUser } = useFetchRecipientUser(chat, user)
+    const { onlineUsers } = useContext(ChatContext)
+    // if recipientId and userId is equal, means it in onlineUser's array
+    const isOnline = onlineUsers?.some((user) => user?.userId === recipientUser?.user._id)
 
     return ( 
         <Stack 
@@ -25,7 +30,7 @@ const UserChat = ({chat, user}) => {
             <div className="d-flex flex-column align-items-end">
                 <div className="date">12/22/2020</div>
                 <div className="this-user-notifications">2</div>
-                <div className='user-online'></div>
+                <div className={isOnline ? 'user-online' : ''}></div>
             </div>
         </Stack> 
     );   
