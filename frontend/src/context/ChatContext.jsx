@@ -17,6 +17,11 @@ export const ChatContextProvider = ({ children, user }) => {
     const [newMessage, setNewMessage] = useState(null)
     const [socket, setScoket] = useState(null)
     const [onlineUsers, setOnlineUsers] = useState([])
+    const [notifications, setNotification] = useState([])
+    const [allUsers, setAllUsers] = useState([])
+
+    // new login need to forget before's data, maybe socket need to transfer the related user id??
+    // console.log('Notification', notification)
 
     // initial socket
     useEffect(() => {
@@ -61,11 +66,22 @@ export const ChatContextProvider = ({ children, user }) => {
         socket.on("getMessage", (res) => {
             // if chatId not equal, then not return, else send the message
             if (currentChat?._id !== res.chatId) return
-            setMessages([...messages, res])
+            setMessages(prev => [...prev, res])
         })
-        
+
+        // only when is online, and chatBox is not open, will send notification
+        socket.on("getNotification", (res) => {
+            const isChatOpen = currentChat?.members.some(id => id === res.senderId)
+            if(isChatOpen){
+                setNotification(prev => [{...res, isRead: true}, ...prev])
+            } else {
+                setNotification(prev => [res, ...prev])
+            }
+        })
+
         return () => {
             socket.off("getMessage")
+            socket.off("getNotification")
         }
     }, [socket, currentChat])
 
@@ -92,6 +108,7 @@ export const ChatContextProvider = ({ children, user }) => {
             })
 
             setPotentialChats(pChats)
+            setAllUsers(response)
         }
         getUsers()
     }, [userChats])
@@ -111,7 +128,7 @@ export const ChatContextProvider = ({ children, user }) => {
             }
         }
         getUserChats()
-    }, [user])
+    }, [user, notifications])
 
     // get all message that this chat had, when currentChat, this effect will be triggered
     useEffect(() => {
@@ -162,6 +179,51 @@ export const ChatContextProvider = ({ children, user }) => {
         setCurrentChat(chat)
     },[])
 
+    // mark all notification to read
+    const markAllNotificationsAsRead = useCallback((notifications) => {
+        const newNotification = notifications.map((n) => {return {...n, isRead: true}})
+        setNotification(newNotification)
+    }, [])
+
+    // mark one notification, and open related chat
+    const markNotificationAsRead = useCallback(
+        (n, userChats, user, notifications) => {
+        // find chat to open
+
+        // check all the chat, if user.id and sender.id are equal, then return and update current chat
+        const desiredChat = userChats.find((chat) => {
+            const chatMembers = [user.id, n.senderId]
+            const isDesiredChat = chat?.members.every((member) => {
+                return chatMembers.includes(member)
+            })
+            return isDesiredChat
+        })
+
+        // mark notification as read
+        const newNotification = notifications.map((el) => {
+            if (n.senderId === el.senderId) return {...n, isRead : true}
+            else return el
+        })
+
+        updateCurrentChat(desiredChat)
+        setNotification(newNotification)
+    }, [])
+    
+    // after check the chat, set notification's isRead to false
+    const markThisNotificationAsRead = useCallback((thisUserNotifications, notifications) => {
+        const newNotification = notifications.map((el) => {
+            let notification
+
+            thisUserNotifications.forEach(n => {
+                if(n.senderId === el.senderId) notification = {...n, isRead: true}
+                else notification = el
+            })
+
+            return notification
+        })
+        setNotification(newNotification)
+    }, [])
+
     return (
         <ChatContext.Provider
             value ={{ 
@@ -176,7 +238,12 @@ export const ChatContextProvider = ({ children, user }) => {
                 messagesError,
                 isMessagesLoading,
                 sendTextMessage,
-                onlineUsers
+                onlineUsers,
+                notifications,
+                allUsers,
+                markAllNotificationsAsRead,
+                markNotificationAsRead,
+                markThisNotificationAsRead
             }}
         >
             {children}

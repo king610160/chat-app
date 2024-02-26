@@ -7,7 +7,6 @@ export const useFetchRecipientUser = (chat, user) => {
 
     // chat will had members, need to find the member not self, return others
     const recipientId = chat?.members.find((id) => id !== user?.id)
-    
     useEffect(() => {
         const getUser = async() => {
             // if no id, return null (the talk user might be deleted, so need to check)
@@ -19,6 +18,5 @@ export const useFetchRecipientUser = (chat, user) => {
         }
         getUser()
     }, [recipientId])
-
     return {recipientUser}
 }

@@ -26,6 +26,11 @@ io.on("connection", (socket) => {
     // if has that users, then emit the message to that socket.id with the message
     if(users) {
         io.to(users.socketId).emit("getMessage", message)
+        io.to(users.socketId).emit("getNotification", {
+          senderId: message.senderId,
+          isRead: false,
+          date: new Date()
+        })
     }
   })
 

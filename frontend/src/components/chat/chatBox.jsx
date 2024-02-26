@@ -1,5 +1,5 @@
 import { AuthContext } from "../../context/AuthContext";
-import { useContext, useState } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { ChatContext } from "../../context/ChatContext";
 import { useFetchRecipientUser } from "../../hooks/useFetchRecipient";
 import { Stack } from 'react-bootstrap'
@@ -11,6 +11,12 @@ const ChatBox = () => {
     const { currentChat, messages, isMessagesLoading, sendTextMessage } = useContext(ChatContext)
     const { recipientUser } = useFetchRecipientUser(currentChat, user)
     const [textMessage, setTextMessage] = useState("")
+    const scroll = useRef()
+
+    // when messages change, this effect will happen, to scroll the chatBox to bottom
+    useEffect(() => {
+        scroll.current?.scrollIntoView({behavior: "smooth"})
+    }, [messages])
 
     if (!recipientUser){
         return ( <p style={{ textAlign: "center", width:"100%"}}>
@@ -30,11 +36,15 @@ const ChatBox = () => {
         </div>
         <Stack gap={3} className="messages">
             {messages && messages.map((message, index) => (
-                    <Stack key={index} className={`${
-                        message?.senderId === user?.id
-                         ? "message self align-self-end flex-grow-0"
-                         : "message align-self-start flex-grow-0"
-                    }`}>
+                    <Stack 
+                        key={index} 
+                        className={`${
+                            message?.senderId === user?.id
+                            ? "message self align-self-end flex-grow-0"
+                            : "message align-self-start flex-grow-0"
+                        }`}
+                        ref={scroll}
+                    >
                         <span>{message.text}</span>
                         <span className="message-footer">{moment(message.createdAt).calendar()}</span>
                     </Stack>
