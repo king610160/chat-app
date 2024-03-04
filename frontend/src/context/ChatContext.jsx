@@ -25,7 +25,7 @@ export const ChatContextProvider = ({ children, user }) => {
 
     // initial socket
     useEffect(() => {
-        const newSocket = io('http://localhost:3000')
+        const newSocket = io('http://localhost:3001')
         setScoket(newSocket)
 
         return () => {
@@ -157,7 +157,6 @@ export const ChatContextProvider = ({ children, user }) => {
         setNewMessage(response)
         setMessages((prev) => [...prev, response])
         setTextMessage("")
-
     }, [])
 
     const createChat = useCallback(async(firstId, secondId) => {
