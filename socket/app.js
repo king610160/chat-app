@@ -1,7 +1,13 @@
 const { Server } = require("socket.io");
 
 // listen on what https
-const io = new Server({ cors: "http://localhost:5173" });
+const io = new Server({ 
+  // cors: "http://localhost:5173" 
+  cors: {
+    origin: "http://43.207.106.65:5173",
+    methods: ["GET", "POST"]
+  }
+});
 let onlineUsers = []
 
 io.on("connection", (socket) => {
