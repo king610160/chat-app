@@ -11,7 +11,7 @@ const app = express()
 
 app.use(express.json())
 app.use(cors({
-    origin: "https://chat.king610160.com",
+    origin: "http://chat.king610160.com",
     methods: ["GET", "POST"]
 }))
 
