@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const io = new Server({ 
   // cors: "http://localhost:5173" 
   cors: {
-    origin: "http://43.207.106.65:5173",
+    origin: "https://chat.king610160.com",
     methods: ["GET", "POST"]
   }
 });
