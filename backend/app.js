@@ -10,10 +10,13 @@ const { PORT } = process.env
 const app = express()
 
 app.use(express.json())
-app.use(cors({
-    origin: "http://chat.king610160.com",
+
+const corsOptions = {
+    origin: ["https://chat.king610160.com", "http://localhost:5173"],
     methods: ["GET", "POST"]
-}))
+};
+
+app.use(cors(corsOptions))
 
 app.use(morgan('tiny'))
 

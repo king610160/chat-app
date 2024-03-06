@@ -25,7 +25,7 @@ export const ChatContextProvider = ({ children, user }) => {
 
     // initial socket
     useEffect(() => {
-        const newSocket = io('http://localhost:3001')
+        const newSocket = io('wss://localhost:3001')
         setScoket(newSocket)
 
         return () => {
