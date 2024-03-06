@@ -1,13 +1,13 @@
-const { Server } = require("socket.io");
+const { createServer } = require("http")
+const { Server } = require("socket.io")
 
-// listen on what https
-const io = new Server({ 
-  // cors: "http://localhost:5173" 
-  cors: {
-    origin: "http://chat.king610160.com",
-    methods: ["GET", "POST"]
-  }
-});
+const httpServer = createServer()
+
+const io = new Server(httpServer, {
+  cors: "https//chat.king610160.com",
+  methods: ["GET", "POST"]
+})
+
 let onlineUsers = []
 
 io.on("connection", (socket) => {
@@ -48,4 +48,4 @@ io.on("connection", (socket) => {
 
 });
 
-io.listen(3001);
+httpServer.listen(3001);
